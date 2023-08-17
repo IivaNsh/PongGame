@@ -56,9 +56,10 @@ function gameloop(){
 }
 
 let startTime = 0;
-let endTime = Date.now();
+let endTime = 0;
 function update(){
 
+    if (endTime == 0) endTime = Date.now();
     startTime = Date.now();
     dt = (startTime - endTime)/1000;
     endTime = startTime;
