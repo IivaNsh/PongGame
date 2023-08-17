@@ -1,6 +1,6 @@
 //import * as game from 'game';
 
-const socket = io('http://192.168.1.76:8080');
+const socket = io('http://94.198.217.195:8080');
 
 
 
