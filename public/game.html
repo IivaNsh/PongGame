@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles/game.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="data:;base64,=">
+
+    <title>Pong</title>
+</head>
+<body>
+    <div class="main">
+        <div class="top_panel">
+            <div class="score" id="scorePanel">
+                <span id="player1_score">0</span>
+                <span>:</span>
+                <span id="player2_score">0</span>
+            </div>
+        </div>
+        <div class="feild">
+            <div class="border">
+                <div class="playground center">
+                    <div class="controll" id="controll"></div>
+                    <div class="platform" id="plt1"></div>
+                    <div class="platform" id="plt2"></div>
+                    <div class="ball" id="ball"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="./scritps/game.js"></script>
+</body>
+</html>

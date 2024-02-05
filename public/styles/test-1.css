@@ -1,0 +1,17 @@
+body {
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+    font-family: 'Silkscreen', monospace;
+    font-size: 1.5em;
+}
+
+p {
+    height: 100px;
+}
+
+#box {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-color: #000000;
+}

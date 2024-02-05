@@ -1,0 +1,40 @@
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+    font-family: 'Silkscreen', monospace;
+    font-size: 2.0em;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#space {
+    width: 600px;
+    height: 100%;
+    position: absolute;
+    box-shadow: rgba(0, 0, 0, 0.315) 0px 30px 200px inset;
+    overflow: hidden;
+}
+
+#box {
+    background: #ffffff;
+    position: absolute;
+    width: 200px;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(0, 0, 0);
+    box-shadow: rgba(0, 0, 0, 0.315) 0px 25px 150px;
+    user-select: none; /* Standard syntax */
+}

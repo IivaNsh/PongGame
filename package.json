@@ -1,10 +1,10 @@
 {
-  "name": "pong",
+  "name": "Web Pong Game",
   "version": "1.0.0",
   "description": "",
-  "main": "server_main.js",
+  "main": "server/main.js",
   "scripts": {
-    "start": "nodemon server_main.js --w"
+    "start": "nodemon server/main.js --w"
   },
   "keywords": [],
   "author": "",
