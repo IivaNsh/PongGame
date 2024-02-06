@@ -14,22 +14,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/main.html'));
 });
 
-app.get('/game', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/game.html'));
-});
-
-app.get('/pc-test', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/test-1.html'));
-});
-
-app.get('/mobile-test', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/test-2.html'));
-});
-
-app.get('/box-test', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/test-3.html'));
-});
-
 http.listen(port, () => {
     console.log(`App on port ${port}`);
 });
@@ -136,7 +120,8 @@ class Room {
         
     
         //console.log(dt);
-        io.emit( "ball_update", this.ball );
+        
+        //io.emit( "ball_update", this.ball );
         //io.emit( "players_update", players );
     }
 }
