@@ -29,12 +29,14 @@ let ball_size;
 window.onload = () => {
   init();
 
-  socket.on("platform_update", (y) => {
-    setPlatformPos(platform2, playground_w-platform_height, y*(playground_h-platform_width));
+  socket.on("players_update", (players) => {
+    //setPlatformPos(platform2, playground_w-platform_height, y*(playground_h-platform_width));
   });
 
-  socket.on("ball_update", (d) => {
-    setBallPos(ball, d.x*playground_w, d.y*playground_h);
+  socket.on("ball_update", (ball) => {
+    ball_elemnt.style.width = ball.r * 2 * playground_h + "px";
+    ball_elemnt.style.height = ball.r * 2 * playground_h + "px";
+    setBallPos(ball_elemnt, ball.x*playground_w, ball.y*playground_h, ball.r*playground_h);
   });
 
   //myMove(playground);
@@ -42,19 +44,11 @@ window.onload = () => {
 
 function init(){
   playground = document.getElementsByClassName("playground")[0];
-  playgroundParent = document.getElementsByClassName("border")[0];
+  playgroundParent = playground.parentElement;
   platform1 = document.getElementById("plt1");
   platform2 = document.getElementById("plt2");
-  ball = document.getElementById("ball");
 
-  controll = document.getElementById("controll");
-
-  player1_score = document.getElementById("player1_score");
-  player2_score = document.getElementById("player2_score");
-  
-  let scorePanel = document.getElementById("scorePanel");
-  
-  playground.addEventListener("mousemove", playground_mouse_move);
+  ball_elemnt = document.getElementById("ball");
 
   resize();
 }
@@ -106,9 +100,8 @@ function resize(){
   
 
   ball_size = nh * 0.06;
-  ball.style.width = `${ball_size}px`;
-  ball.style.height = `${ball_size}px`;
-  ball.style.borderRadius = `${ball_size/2}px`;
+  ball_elemnt.style.width = `${ball_size}px`;
+  ball_elemnt.style.height = `${ball_size}px`;
 
 
   setPlatformPos(platform1, 0, 0);
@@ -135,8 +128,8 @@ function setPlatformPos(platform, x, y){
   setElementPos(platform, x, y);
 }
 
-function setBallPos(ball, x, y){
-  setElementPos(ball, x - ball_size/2, y - ball_size/2);
+function setBallPos(ball, x, y, r){
+  setElementPos(ball, x - r, y - r);
 }
 
 function setElementPos(element, x, y){
