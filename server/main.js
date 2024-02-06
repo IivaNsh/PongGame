@@ -36,66 +36,143 @@ http.listen(port, () => {
 
 
 
+class Room {
+    constructor() {
+        this.players = new Map();
+        this.left = null;
+        this.right = null;
+        this.ball = {
+            x: 0,
+            y: 0,
+            v_x: 0,
+            v_y: 0,
+            r: 0.1
+        };
+        this.id = 0;
 
-var players = new Map();
+        this.startTime = 0;
+        this.endTime = 0;
+    }
+
+    isFull(){
+        return !!this.right && !!this.left;
+    }
+
+    isEmpty(){
+        return !(!!this.right || !!this.left);
+    }
+
+    add( player_id ) {
+        this.players.set(player_id, { pos:0, score:0 });
+        
+        if( !this.left ){
+            this.left = player_id;
+        }
+        else if( !this.right ){
+            this.right = player_id;
+        }
+
+        if(this.isFull()) { 
+            this.startGame();
+        }
+    }
+
+    remove( player_id ) {
+        let removed = this.players.delete(player_id);
+        if(!removed) return;
+        this.stopGame();
+        if(this.left == player_id){
+            this.left = null;
+        }
+        else if(this.right == player_id){
+            this.right = null;
+        }
+    }
+
+    update_position( player_id, pos ) {
+        player = this.players.get(player_id);
+        if(!player){ return; }
+        player.pos = pos;
+
+        console.log([...this.players.entries()]);
+    }
+
+    startGame() {
+        this.ball = {
+            x: 0.5,
+            y: 0.5,
+            v_x: 0.1,
+            v_y: 0.3,
+            r: 0.1
+        };
+        this.id = setInterval(this.game_update.bind(this), 20);
+    }
+
+    stopGame() {
+        clearInterval(this.id);
+    }
+
+    game_update() {
+        
+        if (this.endTime == 0) this.endTime = Date.now();
+        this.startTime = Date.now();
+        let dt = (this.startTime - this.endTime)/1000;
+        this.endTime = this.startTime;
+        
+
+
+        let x = this.ball.x + this.ball.v_x*dt; 
+        let y = this.ball.y + this.ball.v_y*dt;
+    
+        if(x - this.ball.r <= 0 || x + this.ball.r >= 1) {
+            this.ball.v_x*=-1;
+        }
+        if(y - this.ball.r <= 0 || y + this.ball.r >= 1) {
+            this.ball.v_y*=-1;
+        }
+        
+        this.ball.x += this.ball.v_x * dt;
+        this.ball.y += this.ball.v_y * dt;
+        
+    
+        //console.log(dt);
+        io.emit( "ball_update", this.ball );
+        //io.emit( "players_update", players );
+    }
+}
+
+let rooms = [];
 
 io.on('connection', (socket) => {
     
-    //console.log(`${socket.id} connected`);
-    
-    if(players.size >= 2) { return; }
-    
-    let inverted = (players.size === 1);
-    players.set(socket.id, { pos: 0, score: 0, inverted: inverted });
-    console.log([...players.entries()]);
 
-    socket.on("move", (y) => {
-        socket.broadcast.emit("movePlatform", y);
+
+    let room = null;
+
+    for(let i=0; i<rooms.length; i++){
+        if(!rooms[i].isFull()){
+            room = rooms[i];
+            break;
+        }
+    }
+    if(!room){
+        room = new Room();
+        rooms.push(room);
+    }
+
+    player_id = socket.id;
+    room.add(player_id)
+
+    socket.on("position_update", (pos) => {
+        room.update_position( socket.id, pos );
     });
     
     socket.on('disconnect', (reason) => {
-        players.delete(socket.id);
-        if(id) { clearInterval(id); }
-        console.log([...players.entries()]);
-        //console.log(`${socket.id} disconnected`);
+        room.remove(socket.id);
+        rooms = rooms.filter((x) => { return !x.isEmpty() })
+        console.log([...rooms])
     });
     
-    if(players.size == 2) { gameloop(); }
+    console.log([...rooms])
 });
 
-let ball = {
-    x: 0,
-    y: 0,
-    v_x: 0,
-    v_y: 0
-}
-
-let id = null;
-function gameloop(){
-    id = setInterval(update, 20);
-}
-
-let startTime = 0;
-let endTime = 0;
-function update(){
-
-    if (endTime == 0) endTime = Date.now();
-    startTime = Date.now();
-    dt = (startTime - endTime)/1000;
-    endTime = startTime;
-
-    
-
-    n_ballx = ballx+vballx*dt; 
-    n_bally = bally+vbally*dt;
-
-    if(n_ballx <= 0 || n_ballx >= 1) vballx*=-1;
-    if(n_bally <= 0 || n_bally >= 1) vbally*=-1;
-
-
-    ballx += vballx * dt;
-    bally += vbally * dt;
-
-    //console.log(dt);
-    io.emit("ball_update", { "x": ballx, "y": bally });
-}
