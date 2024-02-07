@@ -19,6 +19,7 @@ http.listen(port, () => {
 });
 
 
+let space_aspect_ratio = 2;
 
 class Room {
     constructor() {
@@ -47,13 +48,14 @@ class Room {
     }
 
     add( player_id ) {
-        this.players.set(player_id, { pos:0, score:0 });
+        this.players.set(player_id, { pos:0, score:0, width: 0.2 });
         
         if( !this.left ){
             this.left = player_id;
         }
         else if( !this.right ){
             this.right = player_id;
+            io.to(this.right).emit( "invert", 1 );
         }
 
         if(this.isFull()) { 
@@ -74,22 +76,22 @@ class Room {
     }
 
     update_position( player_id, pos ) {
-        player = this.players.get(player_id);
+        let player = this.players.get(player_id);
         if(!player){ return; }
         player.pos = pos;
-
-        console.log([...this.players.entries()]);
+        this.players.set(player_id, player);
+        //console.log([...this.players.entries()]);
     }
 
     startGame() {
         this.ball = {
             x: 0.5,
             y: 0.5,
-            v_x: 0.1,
-            v_y: 0.3,
-            r: 0.1
+            v_x: 0.5,
+            v_y: 0.5,
+            r: 0.03
         };
-        this.id = setInterval(this.game_update.bind(this), 20);
+        this.id = setInterval(this.game_update.bind(this), 50);
     }
 
     stopGame() {
@@ -107,8 +109,27 @@ class Room {
 
         let x = this.ball.x + this.ball.v_x*dt; 
         let y = this.ball.y + this.ball.v_y*dt;
-    
-        if(x - this.ball.r <= 0 || x + this.ball.r >= 1) {
+        
+        let left_player = this.players.get(this.left);
+        let right_player = this.players.get(this.right);
+
+        if(x - this.ball.r <= 0){
+            //left player hit
+            if(y > left_player.pos + left_player.width/2 || y < left_player.pos - left_player.width/2){
+                //stopGame
+                //left lost
+                this.stopGame();
+            }
+            this.ball.v_x*=-1;
+
+        }
+        else if(x + this.ball.r >= space_aspect_ratio) {
+            //right player hit
+            if(y > right_player.pos + right_player.width/2 || y < right_player.pos - left_player.width/2){
+                //stopGame
+                //right lost
+                this.stopGame();
+            }
             this.ball.v_x*=-1;
         }
         if(y - this.ball.r <= 0 || y + this.ball.r >= 1) {
@@ -121,16 +142,17 @@ class Room {
     
         //console.log(dt);
         
-        //io.emit( "ball_update", this.ball );
-        //io.emit( "players_update", players );
+        io.to(this.left).emit( "ball_update", this.ball);
+        io.to(this.right).emit( "ball_update", this.ball);
+        io.to(this.left).emit( "players_update", this.players.get(this.left), this.players.get(this.right) );
+        io.to(this.right).emit( "players_update", this.players.get(this.right), this.players.get(this.left) );
+
     }
 }
 
 let rooms = [];
 
 io.on('connection', (socket) => {
-    
-
 
     let room = null;
 

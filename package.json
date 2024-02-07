@@ -2,7 +2,7 @@
   "name": "Web Pong Game",
   "version": "1.0.0",
   "description": "",
-  "main": "server/main.js",
+  "main": "server/app.js",
   "scripts": {
     "start": "nodemon server/main.js --w"
   },

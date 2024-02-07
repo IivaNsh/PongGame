@@ -7,30 +7,33 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Silkscreen">
 
     <link rel="icon" href="data:;base64,=">
 
-    <title>Pong</title>
+    <title>Game</title>
 </head>
 <body>
-    <div class="main">
-        <div class="top_panel">
-            <div class="score" id="scorePanel">
-                <span id="player1_score">0</span>
-                <span>:</span>
-                <span id="player2_score">0</span>
+    <div class="content_box border">
+        <div class="score_panel border">
+            <p>score panel</p>
+        </div>
+        <div class="game border content_box">
+            <div id="space" class="border">
+                <div id="controll"></div>
+                <div id="players">
+                    <div id="player_left"></div>
+                    <div id="player_right"></div>
+                </div>
+                <div id="game_content">
+                    <div id="ball"></div>
+                </div>
+                
+
             </div>
         </div>
-        <div class="feild">
-            <div class="border">
-                <div class="playground center">
-                    <div class="controll" id="controll"></div>
-                    <div class="platform" id="plt1"></div>
-                    <div class="platform" id="plt2"></div>
-                    <div class="ball" id="ball"></div>
-                </div>
-            </div>
+        <div class="fotter border">
+            <p>fotter</p>
         </div>
     </div>
 
