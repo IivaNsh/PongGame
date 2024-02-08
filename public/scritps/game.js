@@ -8,17 +8,19 @@ let element_ball;
 let player_left = { pos: 0.5, score: 0, width: 0.2 };
 let player_right = { pos: 0.5, score: 0, width: 0.2 };
 let ball = {
-  x: 0.5,
+  x: 1,
   y: 0.5,
-  v_x: 0.1,
-  v_y: 0.3,
-  r: 0.05
+  v_x: 0.0,
+  v_y: 0.0,
+  r: 0.03
 };
 
 let space_aspect_ratio = 2;
 let scale = 300;
 
 window.onload = () => {
+
+  element_debug_info = document.getElementById("debug_info");
 
   space = document.getElementById("space");
   element_player_left = document.getElementById("player_left");
@@ -31,19 +33,27 @@ window.onload = () => {
   space.style.aspectRatio = space_aspect_ratio;
   space.style.height = scale + "px";
 
-  element_player_left.style.height = player_left.width;
-  element_player_right.style.height = player_right.width;
+  element_player_left.style.height = player_left.width * scale + "px";
+  element_player_right.style.height = player_right.width * scale + "px";
+
+  element_player_left.style.top = player_left.pos * scale - element_player_left.offsetHeight/2 + "px";
+  element_player_left.style.left = "0px";
   
   element_player_right.style.top = player_right.pos * scale - element_player_right.offsetHeight/2 + "px";
   element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
+
+  element_ball.style.width = ball.r * 2 * scale + "px";
+  element_ball.style.height = ball.r * 2 * scale + "px";
+  element_ball.style.top = (ball.y - ball.r) * scale + "px";
+  element_ball.style.left =  (ball.x - ball.r) * scale + "px";
 
 
   socket.on("players_update", (player_left_backEnd, player_right_backEnd) => {
     player_left = player_left_backEnd;
     player_right = player_right_backEnd;
 
-    element_player_left.style.height = player_left.width;
-    element_player_right.style.height = player_right.width;
+    element_player_left.style.height = player_left.width * scale + "px";
+    element_player_right.style.height = player_right.width * scale + "px";
 
     element_player_right.style.top = player_right.pos * scale - element_player_right.offsetHeight/2 + "px";
     element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
@@ -51,9 +61,11 @@ window.onload = () => {
 
   socket.on("ball_update", (ball_backEnd) => {
     ball = ball_backEnd;
+    element_debug_info.innerHTML = JSON.stringify(ball);
     element_ball.style.width = ball.r * 2 * scale + "px";
     element_ball.style.height = ball.r * 2 * scale + "px";
-    element_ball.style.transform = `translate(${(ball.x - ball.r) * scale}px, ${(ball.y - ball.r) * scale}px)`;
+    element_ball.style.top = (ball.y - ball.r) * scale + "px";
+    element_ball.style.left =  (ball.x - ball.r) * scale + "px";
   });
 
   socket.on("invert", (_) => {
@@ -64,9 +76,14 @@ window.onload = () => {
     setTimeout(()=>{window.location.replace("main.html");}, 2000);
   });
 
+  socket.on("end_game", () => {
+    window.location.replace("main.html");
+  });
+
+
   dragElementWithControllPC(element_player_left, element_controll);
   dragElementWithControllMobile(element_player_left, element_controll);
-  setInterval(send_position, 50);
+  setInterval(send_position, 10);
 };
 
 function dragElementWithControllPC(elmnt, elmnt_controll) {

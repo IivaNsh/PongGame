@@ -27,8 +27,8 @@ class Room {
         this.left = null;
         this.right = null;
         this.ball = {
-            x: 0,
-            y: 0,
+            x: 1,
+            y: 0.5,
             v_x: 0,
             v_y: 0,
             r: 0.1
@@ -48,7 +48,7 @@ class Room {
     }
 
     add( player_id ) {
-        this.players.set(player_id, { pos:0, score:0, width: 0.2 });
+        this.players.set(player_id, { pos:0.5, score:0, width: 0.2 });
         
         if( !this.left ){
             this.left = player_id;
@@ -64,9 +64,9 @@ class Room {
     }
 
     remove( player_id ) {
+        this.stopGame();
         let removed = this.players.delete(player_id);
         if(!removed) return;
-        this.stopGame();
         if(this.left == player_id){
             this.left = null;
         }
@@ -85,17 +85,25 @@ class Room {
 
     startGame() {
         this.ball = {
-            x: 0.5,
+            x: 1,
             y: 0.5,
             v_x: 0.5,
             v_y: 0.5,
             r: 0.03
         };
-        this.id = setInterval(this.game_update.bind(this), 50);
+        this.players.set(this.left, { pos:0.5, score:0, width: 0.4 });
+        this.players.set(this.right, { pos:0.5, score:0, width: 0.4 });
+        this.endTime = 0;
+        this.startTime = 0;
+        this.dt = 0;
+        this.id = setInterval(this.game_update.bind(this), 10);
     }
 
     stopGame() {
         clearInterval(this.id);
+        io.to(this.left).emit( "end_game", this.ball);
+        io.to(this.right).emit( "end_game", this.ball);
+        
     }
 
     game_update() {
