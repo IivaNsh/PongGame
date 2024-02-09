@@ -5,8 +5,8 @@ let element_player_left;
 let element_player_right;
 let element_ball;
 
-let player_left = { pos: 0.5, score: 0, width: 0.2 };
-let player_right = { pos: 0.5, score: 0, width: 0.2 };
+let player_left = { pos: 0.5, score: 0, width: 0.4 };
+let player_right = { pos: 0.5, score: 0, width: 0.4 };
 let ball = {
   x: 1,
   y: 0.5,
@@ -20,7 +20,10 @@ let scale = 300;
 
 window.onload = () => {
 
-  element_debug_info = document.getElementById("debug_info");
+  //element_debug_info = document.getElementById("debug_info");
+  //element_debug_info.style.top = "100px";
+  //element_debug_info.style.left = "100px";
+
 
   space = document.getElementById("space");
   element_player_left = document.getElementById("player_left");
@@ -56,12 +59,12 @@ window.onload = () => {
     element_player_right.style.height = player_right.width * scale + "px";
 
     element_player_right.style.top = player_right.pos * scale - element_player_right.offsetHeight/2 + "px";
-    element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
+    //element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
   });
 
   socket.on("ball_update", (ball_backEnd) => {
     ball = ball_backEnd;
-    element_debug_info.innerHTML = JSON.stringify(ball);
+    //element_debug_info.innerHTML = JSON.stringify(ball);
     element_ball.style.width = ball.r * 2 * scale + "px";
     element_ball.style.height = ball.r * 2 * scale + "px";
     element_ball.style.top = (ball.y - ball.r) * scale + "px";
@@ -77,13 +80,13 @@ window.onload = () => {
   });
 
   socket.on("end_game", () => {
-    window.location.replace("main.html");
+    //window.location.replace("main.html");
   });
 
 
   dragElementWithControllPC(element_player_left, element_controll);
   dragElementWithControllMobile(element_player_left, element_controll);
-  setInterval(send_position, 10);
+  setInterval(send_position, 1);
 };
 
 function dragElementWithControllPC(elmnt, elmnt_controll) {

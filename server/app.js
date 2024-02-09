@@ -79,16 +79,18 @@ class Room {
         let player = this.players.get(player_id);
         if(!player){ return; }
         player.pos = pos;
-        this.players.set(player_id, player);
+        //this.players.set(player_id, player);
         //console.log([...this.players.entries()]);
     }
 
     startGame() {
+        let v = 1;
+        let a = Math.random()*Math.PI;
         this.ball = {
             x: 1,
             y: 0.5,
-            v_x: 0.5,
-            v_y: 0.5,
+            v_x: v*Math.cos(a),
+            v_y: v*Math.sin(a),
             r: 0.03
         };
         this.players.set(this.left, { pos:0.5, score:0, width: 0.4 });
@@ -96,7 +98,7 @@ class Room {
         this.endTime = 0;
         this.startTime = 0;
         this.dt = 0;
-        this.id = setInterval(this.game_update.bind(this), 10);
+        this.id = setInterval(this.game_update.bind(this), 1);
     }
 
     stopGame() {
@@ -121,7 +123,9 @@ class Room {
         let left_player = this.players.get(this.left);
         let right_player = this.players.get(this.right);
 
-        if(x - this.ball.r <= 0){
+        let colision = 0;
+
+        if(x - this.ball.r <= 0.01){
             //left player hit
             if(y > left_player.pos + left_player.width/2 || y < left_player.pos - left_player.width/2){
                 //stopGame
@@ -129,9 +133,10 @@ class Room {
                 this.stopGame();
             }
             this.ball.v_x*=-1;
-
+            colision = 1;
+        
         }
-        else if(x + this.ball.r >= space_aspect_ratio) {
+        else if(x + this.ball.r >= space_aspect_ratio - 0.01) {
             //right player hit
             if(y > right_player.pos + right_player.width/2 || y < right_player.pos - left_player.width/2){
                 //stopGame
@@ -139,13 +144,23 @@ class Room {
                 this.stopGame();
             }
             this.ball.v_x*=-1;
+            colision = 1;
+        
         }
+
+
         if(y - this.ball.r <= 0 || y + this.ball.r >= 1) {
             this.ball.v_y*=-1;
+            colision = 1;
         }
         
         this.ball.x += this.ball.v_x * dt;
         this.ball.y += this.ball.v_y * dt;
+        
+        if(colision) {
+            this.ball.v_x *= 1.02;
+            this.ball.v_y *= 1.02;
+        }
         
     
         //console.log(dt);
