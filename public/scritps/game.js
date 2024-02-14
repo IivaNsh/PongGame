@@ -15,6 +15,8 @@ let ball = {
   r: 0.03
 };
 
+let a = 0;
+
 let space_aspect_ratio = 2;
 let scale = 300;
 
@@ -58,7 +60,7 @@ window.onload = () => {
     element_player_left.style.height = player_left.width * scale + "px";
     element_player_right.style.height = player_right.width * scale + "px";
 
-    element_player_right.style.top = player_right.pos * scale - element_player_right.offsetHeight/2 + "px";
+    element_player_right.style.top = (player_right.pos - player_right.width) * scale + "px";
     //element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
   });
 
@@ -71,7 +73,7 @@ window.onload = () => {
     element_ball.style.left =  (ball.x - ball.r) * scale + "px";
   });
 
-  socket.on("invert", (_) => {
+  socket.on("invert", () => {
     element_game_content.style.transform = `scale(-1,1)`;
   });
 
@@ -86,7 +88,7 @@ window.onload = () => {
 
   dragElementWithControllPC(element_player_left, element_controll);
   dragElementWithControllMobile(element_player_left, element_controll);
-  setInterval(send_position, 1);
+  setInterval(send_position, 20);
 };
 
 function dragElementWithControllPC(elmnt, elmnt_controll) {
@@ -124,7 +126,7 @@ function dragElementWithControllPC(elmnt, elmnt_controll) {
     
     constrictToElement(elmnt, elmnt.parentElement);
 
-    player_left.pos = (elmnt.offsetTop + elmnt.offsetHeight/2) / scale;
+    //player_left.pos = (elmnt.offsetTop + elmnt.offsetHeight/2) / scale;
     //console.log(elmnt.offsetLeft, elmnt.offsetTop, elmnt.parentElement.offsetWidth, elmnt.parentElement.offsetHeight)
   }
 
@@ -202,5 +204,6 @@ function constrictToElement(el1, el2){
 }
 
 function send_position(){
-  socket.emit("position_update", player_left.pos);
+  socket.emit("position_update", Math.sin(a)*0.5 + 0.5);
+  a+=0.01
 }

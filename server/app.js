@@ -3,7 +3,7 @@ const app = express();
 const path = require('path');
 
 const http = require('http').Server(app);
-const port = process.env.port || 8080;
+const port = process.env.port || 3000;
 
 const io = require('socket.io')(http);
 
@@ -20,6 +20,32 @@ http.listen(port, () => {
 
 
 let space_aspect_ratio = 2;
+
+function line_intersection(p1, p2, p3, p4){
+    let [x1, y1] = [p1.x, p1.y];
+    let [x2, y2] = [p2.x, p2.y];
+    let [x3, y3] = [p3.x, p3.y];
+    let [x4, y4] = [p4.x, p4.y];
+    let s1 = x2-x1;
+    let s2 = y2-y1;
+    let s3 = x4-x3;
+    let s4 = y4-y3;
+    let h1 = y3-y1;
+    let h2 = x3-x1;
+    let a = h1*s1-s2*h2;
+    let b = s2*s3-s4*s1;
+    
+    let t2 = a/b;
+    let t1 = (s3*t2+h2)/s1;
+    
+    if((0<t2 && t2<1) && (0<t1 && t1<1)){
+        let p = { x: (p4.x-p3.x)*t2 + p3.x, y: (p4.y-p3.y)*t2 + p3.y};
+        return p;
+    }
+    return undefined;
+}
+
+
 
 class Room {
     constructor() {
@@ -55,7 +81,7 @@ class Room {
         }
         else if( !this.right ){
             this.right = player_id;
-            io.to(this.right).emit( "invert", 1 );
+            io.to(this.right).emit( "invert" );
         }
 
         if(this.isFull()) { 
@@ -79,7 +105,10 @@ class Room {
         let player = this.players.get(player_id);
         if(!player){ return; }
         player.pos = pos;
-        //this.players.set(player_id, player);
+        //io.to(this.left).emit( "players_update", this.players.get(this.left), this.players.get(this.right) );
+        //io.to(this.right).emit( "players_update", this.players.get(this.right), this.players.get(this.left) );
+
+        this.players.set(player_id, player);
         //console.log([...this.players.entries()]);
     }
 
@@ -98,14 +127,13 @@ class Room {
         this.endTime = 0;
         this.startTime = 0;
         this.dt = 0;
-        this.id = setInterval(this.game_update.bind(this), 1);
+        this.id = setInterval(this.game_update.bind(this), 20);
     }
 
     stopGame() {
-        clearInterval(this.id);
-        io.to(this.left).emit( "end_game", this.ball);
-        io.to(this.right).emit( "end_game", this.ball);
-        
+        //clearInterval(this.id);
+        //io.to(this.left).emit( "end_game" );
+        //io.to(this.right).emit( "end_game" );
     }
 
     game_update() {
@@ -145,7 +173,6 @@ class Room {
             }
             this.ball.v_x*=-1;
             colision = 1;
-        
         }
 
 
@@ -172,6 +199,10 @@ class Room {
 
     }
 }
+
+
+
+
 
 let rooms = [];
 
@@ -205,4 +236,6 @@ io.on('connection', (socket) => {
     
     console.log([...rooms])
 });
+
+
 
