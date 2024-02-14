@@ -45,7 +45,15 @@ function line_intersection(p1, p2, p3, p4){
     return undefined;
 }
 
-
+class Vector2d{
+    constructor(){
+        this.x = 0;
+        this.y = 0;
+    }
+    lenght(){
+        return Math.hypot(this.x, this.y);
+    }
+}
 
 class Room {
     constructor() {
@@ -131,13 +139,15 @@ class Room {
     }
 
     stopGame() {
-        //clearInterval(this.id);
-        //io.to(this.left).emit( "end_game" );
-        //io.to(this.right).emit( "end_game" );
+        clearInterval(this.id);
+        io.to(this.left).emit( "end_game" );
+        io.to(this.right).emit( "end_game" );
     }
 
+
+
     game_update() {
-        
+    
         if (this.endTime == 0) this.endTime = Date.now();
         this.startTime = Date.now();
         let dt = (this.startTime - this.endTime)/1000;
@@ -151,9 +161,42 @@ class Room {
         let left_player = this.players.get(this.left);
         let right_player = this.players.get(this.right);
 
+        let p1 = line_intersection({x: this.ball.x - this.ball.r, y: this.ball.y}, {x: x - this.ball.r, y: y}, {x:0, y:0}, {x:0, y:1});
+        let p2 = line_intersection({x: this.ball.x + this.ball.r, y: this.ball.y}, {x: x + this.ball.r, y: y}, {x:space_aspect_ratio, y:0}, {x:space_aspect_ratio, y:1});
+        if(p1 !== undefined){
+            console.log("p1", p1);
+            if( Math.abs(p1.y - left_player.pos) > left_player.width/2){
+                //stopGame
+                //left lost
+                this.stopGame();
+            }
+            else{
+                this.ball.x = p1.x + this.ball.r;
+                this.ball.y = p1.y;
+                this.ball.v_x*=-1;
+                this.ball.v_x*=1.05;
+                this.ball.v_y*=1.05;
+            }
+        }
+        else if(p2 !== undefined){
+            console.log("p2", p2);
+            if( Math.abs(p2.y - right_player.pos) > right_player.width/2){
+                //stopGame
+                //right lost
+                this.stopGame();
+            }
+            else{
+                this.ball.x = p2.x - this.ball.r;
+                this.ball.y = p2.y;
+                this.ball.v_x*=-1;
+                this.ball.v_x*=1.05;
+                this.ball.v_y*=1.05;
+            }
+        }
+        /*
         let colision = 0;
-
-        if(x - this.ball.r <= 0.01){
+        
+        if(x - this.ball.r <= 0){
             //left player hit
             if(y > left_player.pos + left_player.width/2 || y < left_player.pos - left_player.width/2){
                 //stopGame
@@ -164,7 +207,7 @@ class Room {
             colision = 1;
         
         }
-        else if(x + this.ball.r >= space_aspect_ratio - 0.01) {
+        else if(x + this.ball.r >= space_aspect_ratio) {
             //right player hit
             if(y > right_player.pos + right_player.width/2 || y < right_player.pos - left_player.width/2){
                 //stopGame
@@ -174,28 +217,21 @@ class Room {
             this.ball.v_x*=-1;
             colision = 1;
         }
-
+        */
 
         if(y - this.ball.r <= 0 || y + this.ball.r >= 1) {
             this.ball.v_y*=-1;
-            colision = 1;
         }
         
         this.ball.x += this.ball.v_x * dt;
         this.ball.y += this.ball.v_y * dt;
         
-        if(colision) {
-            this.ball.v_x *= 1.02;
-            this.ball.v_y *= 1.02;
-        }
-        
-    
         //console.log(dt);
         
         io.to(this.left).emit( "ball_update", this.ball);
         io.to(this.right).emit( "ball_update", this.ball);
-        io.to(this.left).emit( "players_update", this.players.get(this.left), this.players.get(this.right) );
-        io.to(this.right).emit( "players_update", this.players.get(this.right), this.players.get(this.left) );
+        io.to(this.left).emit( "players_update", this.players.get(this.right) );
+        io.to(this.right).emit( "players_update", this.players.get(this.left) );
 
     }
 }
@@ -231,10 +267,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', (reason) => {
         room.remove(socket.id);
         rooms = rooms.filter((x) => { return !x.isEmpty() })
-        console.log([...rooms])
+        //console.log([...rooms])
     });
     
-    console.log([...rooms])
+    //console.log([...rooms])
 });
 
 

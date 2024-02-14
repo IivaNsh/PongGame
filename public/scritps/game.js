@@ -20,6 +20,14 @@ let a = 0;
 let space_aspect_ratio = 2;
 let scale = 300;
 
+function show_start(){
+
+}
+
+function show_end(){
+  
+}
+
 window.onload = () => {
 
   //element_debug_info = document.getElementById("debug_info");
@@ -53,14 +61,12 @@ window.onload = () => {
   element_ball.style.left =  (ball.x - ball.r) * scale + "px";
 
 
-  socket.on("players_update", (player_left_backEnd, player_right_backEnd) => {
-    player_left = player_left_backEnd;
+  socket.on("players_update", (player_right_backEnd) => {
     player_right = player_right_backEnd;
 
-    element_player_left.style.height = player_left.width * scale + "px";
     element_player_right.style.height = player_right.width * scale + "px";
 
-    element_player_right.style.top = (player_right.pos - player_right.width) * scale + "px";
+    element_player_right.style.top = (player_right.pos - player_right.width/2) * scale + "px";
     //element_player_right.style.left = space.offsetWidth - element_player_right.offsetWidth + "px";
   });
 
@@ -82,7 +88,7 @@ window.onload = () => {
   });
 
   socket.on("end_game", () => {
-    //window.location.replace("main.html");
+    window.location.replace("main.html");
   });
 
 
@@ -122,11 +128,11 @@ function dragElementWithControllPC(elmnt, elmnt_controll) {
     pos4 = e.clientY;
     // set the element's new position:
     elmnt.style.top = (pos4-getOffset(elmnt.parentElement).top - elmnt.offsetHeight/2) + "px";
-    elmnt.style.left = (pos3-getOffset(elmnt.parentElement).left - elmnt.offsetWidth/2) + "px";
+    //elmnt.style.left = (pos3-getOffset(elmnt.parentElement).left - elmnt.offsetWidth/2) + "px";
     
     constrictToElement(elmnt, elmnt.parentElement);
 
-    //player_left.pos = (elmnt.offsetTop + elmnt.offsetHeight/2) / scale;
+    player_left.pos = (elmnt.offsetTop + elmnt.offsetHeight/2) / scale;
     //console.log(elmnt.offsetLeft, elmnt.offsetTop, elmnt.parentElement.offsetWidth, elmnt.parentElement.offsetHeight)
   }
 
@@ -166,7 +172,7 @@ function dragElementWithControllMobile(elmnt, elmnt_controll) {
       
       // assign elmnt new coordinates based on the touch.
       elmnt.style.top = (pos4-getOffset(elmnt.parentElement).top - elmnt.offsetHeight/2) + "px";
-      elmnt.style.left = (pos3-getOffset(elmnt.parentElement).left - elmnt.offsetWidth/2) + "px";
+      //elmnt.style.left = (pos3-getOffset(elmnt.parentElement).left - elmnt.offsetWidth/2) + "px";
       
       constrictToElement(elmnt, elmnt.parentElement);
 
@@ -204,6 +210,5 @@ function constrictToElement(el1, el2){
 }
 
 function send_position(){
-  socket.emit("position_update", Math.sin(a)*0.5 + 0.5);
-  a+=0.01
+  socket.emit("position_update", player_left.pos);
 }
