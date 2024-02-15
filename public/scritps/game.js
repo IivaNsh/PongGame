@@ -12,7 +12,7 @@ let ball = {
   y: 0.5,
   v_x: 0.0,
   v_y: 0.0,
-  r: 0.03
+  r: 0.02
 };
 
 let a = 0;
@@ -91,6 +91,9 @@ window.onload = () => {
     window.location.replace("main.html");
   });
 
+  socket.on("restart_game", () => {
+    //window.location.replace("main.html");
+  });
 
   dragElementWithControllPC(element_player_left, element_controll);
   dragElementWithControllMobile(element_player_left, element_controll);

@@ -72,6 +72,7 @@ class Room {
 
         this.startTime = 0;
         this.endTime = 0;
+        this.games_played = 0;
     }
 
     isFull(){
@@ -123,22 +124,32 @@ class Room {
             y: 0.5,
             v_x: v*Math.cos(a),
             v_y: v*Math.sin(a),
-            r: 0.01
+            r: 0.02
         };
         this.players.set(this.left, { pos:0.5, score:0, width: 0.4 });
         this.players.set(this.right, { pos:0.5, score:0, width: 0.4 });
         this.endTime = Date.now()
         this.startTime = Date.now();
         this.dt = 0;
-        this.send_loop_id = setInterval(this.send_update.bind(this), 10);
-        this.ball_loop_id = setInterval(this.ball_update.bind(this), 1);
+        this.send_loop_id = setInterval(this.send_update.bind(this), 20);
+        this.ball_loop_id = setInterval(this.ball_update.bind(this), 2);
     }
 
-    stopGame() {
-        clearInterval(this.send_loop_id);
+    async stopGame() {
         clearInterval(this.ball_loop_id);
-        io.to(this.left).emit( "end_game" );
-        io.to(this.right).emit( "end_game" );
+        clearInterval(this.send_loop_id);
+        await new Promise(r => setTimeout(r, 2000));
+        this.games_played += 1;
+        if(this.games_played == 3){
+            io.to(this.left).emit( "end_game" );
+            io.to(this.right).emit( "end_game" );
+            this.games_played = 0;
+        }
+        else{
+            io.to(this.left).emit( "restart_game" );
+            io.to(this.right).emit( "rastart_game" );
+            this.startGame();
+        }
     }
 
     send_update(){
