@@ -57,7 +57,7 @@ p {
     position: absolute;
     width: 1px;
     height: 1px;
-    border-radius: 50%;
+    /*border-radius: 50%;*/
     background-color: rgb(0, 0, 0);
 }
 

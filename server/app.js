@@ -67,7 +67,8 @@ class Room {
             v_y: 0,
             r: 0.1
         };
-        this.id = 0;
+        this.send_loop_id = 0;
+        this.ball_loop_id = 0;
 
         this.startTime = 0;
         this.endTime = 0;
@@ -111,13 +112,7 @@ class Room {
 
     update_position( player_id, pos ) {
         let player = this.players.get(player_id);
-        if(!player){ return; }
         player.pos = pos;
-        //io.to(this.left).emit( "players_update", this.players.get(this.left), this.players.get(this.right) );
-        //io.to(this.right).emit( "players_update", this.players.get(this.right), this.players.get(this.left) );
-
-        this.players.set(player_id, player);
-        //console.log([...this.players.entries()]);
     }
 
     startGame() {
@@ -128,111 +123,113 @@ class Room {
             y: 0.5,
             v_x: v*Math.cos(a),
             v_y: v*Math.sin(a),
-            r: 0.03
+            r: 0.01
         };
         this.players.set(this.left, { pos:0.5, score:0, width: 0.4 });
         this.players.set(this.right, { pos:0.5, score:0, width: 0.4 });
-        this.endTime = 0;
-        this.startTime = 0;
+        this.endTime = Date.now()
+        this.startTime = Date.now();
         this.dt = 0;
-        this.id = setInterval(this.game_update.bind(this), 20);
+        this.send_loop_id = setInterval(this.send_update.bind(this), 10);
+        this.ball_loop_id = setInterval(this.ball_update.bind(this), 1);
     }
 
     stopGame() {
-        clearInterval(this.id);
+        clearInterval(this.send_loop_id);
+        clearInterval(this.ball_loop_id);
         io.to(this.left).emit( "end_game" );
         io.to(this.right).emit( "end_game" );
     }
 
+    send_update(){
+        io.to(this.left).to(this.right).emit( "ball_update", this.ball);
 
+        io.to(this.left).emit( "players_update", this.players.get(this.right) );
+        io.to(this.right).emit( "players_update", this.players.get(this.left) );
+    }
 
-    game_update() {
-    
-        if (this.endTime == 0) this.endTime = Date.now();
+    ball_update(){
         this.startTime = Date.now();
         let dt = (this.startTime - this.endTime)/1000;
         this.endTime = this.startTime;
+
+        let r = this.ball.r;
+        let px = this.ball.x;
+        let py= this.ball.y;
+        let nx = this.ball.x + this.ball.v_x*dt;
+        let ny = this.ball.y + this.ball.v_y*dt;
         
+        let lpos = this.players.get(this.left).pos;
+        let rpos = this.players.get(this.right).pos;
+        let lhw = this.players.get(this.left).width/2;
+        let rhw = this.players.get(this.right).width/2;
 
-
-        let x = this.ball.x + this.ball.v_x*dt; 
-        let y = this.ball.y + this.ball.v_y*dt;
+        let p1 = line_intersection({x: px - r, y: py}, {x: nx - r, y: ny}, {x:0, y:0}, {x:0, y:1});
+        let p2 = line_intersection({x: px + r, y: py}, {x: nx + r, y: ny}, {x:space_aspect_ratio, y:0}, {x:space_aspect_ratio, y:1});
+        let p3 = line_intersection({x: px, y: py - r}, {x: nx, y: ny - r}, {x:0, y:0}, {x:space_aspect_ratio, y:0});
+        let p4 = line_intersection({x: px, y: py + r}, {x: nx, y: ny + r}, {x:0, y:1}, {x:space_aspect_ratio, y:1});
         
-        let left_player = this.players.get(this.left);
-        let right_player = this.players.get(this.right);
-
-        let p1 = line_intersection({x: this.ball.x - this.ball.r, y: this.ball.y}, {x: x - this.ball.r, y: y}, {x:0, y:0}, {x:0, y:1});
-        let p2 = line_intersection({x: this.ball.x + this.ball.r, y: this.ball.y}, {x: x + this.ball.r, y: y}, {x:space_aspect_ratio, y:0}, {x:space_aspect_ratio, y:1});
         if(p1 !== undefined){
             console.log("p1", p1);
-            if( Math.abs(p1.y - left_player.pos) > left_player.width/2){
+            if( Math.abs(p1.y - lpos) > lhw){
                 //stopGame
                 //left lost
                 this.stopGame();
             }
             else{
-                this.ball.x = p1.x + this.ball.r;
+                this.ball.x = p1.x + r;
                 this.ball.y = p1.y;
-                this.ball.v_x*=-1;
-                this.ball.v_x*=1.05;
-                this.ball.v_y*=1.05;
+
+                let factor = (p1.y - lpos)/lhw;
+                let angle = (Math.PI / 3) * factor;
+                let v_mag = Math.hypot(this.ball.v_x, this.ball.v_y) * 1.05;
+                
+                this.ball.v_x = Math.cos(angle) * v_mag;
+                this.ball.v_y = Math.sin(angle) * v_mag;
             }
+            console.log("p1", p1);
         }
         else if(p2 !== undefined){
             console.log("p2", p2);
-            if( Math.abs(p2.y - right_player.pos) > right_player.width/2){
+            if( Math.abs(p2.y - rpos) > rhw){
                 //stopGame
                 //right lost
                 this.stopGame();
             }
             else{
-                this.ball.x = p2.x - this.ball.r;
+                this.ball.x = p2.x - r;
                 this.ball.y = p2.y;
-                this.ball.v_x*=-1;
-                this.ball.v_x*=1.05;
-                this.ball.v_y*=1.05;
-            }
-        }
-        /*
-        let colision = 0;
-        
-        if(x - this.ball.r <= 0){
-            //left player hit
-            if(y > left_player.pos + left_player.width/2 || y < left_player.pos - left_player.width/2){
-                //stopGame
-                //left lost
-                this.stopGame();
-            }
-            this.ball.v_x*=-1;
-            colision = 1;
-        
-        }
-        else if(x + this.ball.r >= space_aspect_ratio) {
-            //right player hit
-            if(y > right_player.pos + right_player.width/2 || y < right_player.pos - left_player.width/2){
-                //stopGame
-                //right lost
-                this.stopGame();
-            }
-            this.ball.v_x*=-1;
-            colision = 1;
-        }
-        */
 
-        if(y - this.ball.r <= 0 || y + this.ball.r >= 1) {
-            this.ball.v_y*=-1;
+                let factor = (p2.y - rpos)/rhw;
+                let angle = (Math.PI / 3) * factor;
+                let v_mag = Math.hypot(this.ball.v_x, this.ball.v_y) * 1.05;
+                
+                this.ball.v_x = -Math.cos(angle) * v_mag;
+                this.ball.v_y = Math.sin(angle) * v_mag;
+            }
+            console.log("p2", p2);
+        }
+
+        else if(p3 !== undefined){
+            this.ball.x = p3.x;
+            this.ball.y = p3.y + r;
+            this.ball.v_y *= -1;
+            //this.ball.v_x*=1.05;
+            //this.ball.v_y*=1.05;
+            console.log("p3", p3);
+        }
+        else if(p4 !== undefined){
+            console.log(this.ball.v_y);
+            this.ball.x = p4.x;
+            this.ball.y = p4.y - r;
+            this.ball.v_y *= -1;
+            //this.ball.v_x*=1.05;
+            //this.ball.v_y*=1.05;
+            console.log("p4", p4, this.ball.v_y);
         }
         
         this.ball.x += this.ball.v_x * dt;
         this.ball.y += this.ball.v_y * dt;
-        
-        //console.log(dt);
-        
-        io.to(this.left).emit( "ball_update", this.ball);
-        io.to(this.right).emit( "ball_update", this.ball);
-        io.to(this.left).emit( "players_update", this.players.get(this.right) );
-        io.to(this.right).emit( "players_update", this.players.get(this.left) );
-
     }
 }
 
