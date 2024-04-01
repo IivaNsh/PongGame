@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Silkscreen">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="styles/test_dynamic_field.css" />
+    <title>testing dynamic field</title>
+</head>
+<body class="m-0 p-0">
+    
+    <div class="container d-flex flex-column w-100 h-100 justify-content-between p-2", style="background-color: rgb(255, 255, 255);">
+        <div class="border rounded container d-flex flex-row justify-content-around p-2 my-2" style="background-color: rgb(236, 219, 156);">
+            <p>option 1</p>
+            <p>option 2</p>
+            <p>option 3</p>
+        </div>
+        <div  id="example_container" class="border rounded flex-grow-1 container d-flex flex-column p-2 justify-content-start my-2" style="background-color: rgb(159, 235, 220);">
+            <div class="border rounded container my-2" style="background-color: #c4f5be;">
+                <div>
+                    <button id="fullscreen_button">Fullscreen</button>
+                    <button id="lock_button">Lock</button>
+                    <button id="unlock_button">Unlock</button>
+                </div>
+                <div>
+                    <textarea class="border rounded w-100" id="log" rows="7" style="background-color: #d6a4f8;"></textarea>
+                </div>
+            </div>
+            <div class="flex-grow-1 border rounded container my-2 d-flex justify-content-center align-items-center" style="background-color: #c4f5be;">
+                <div class="border rounded" style="background-color: #f5ecbe; height: 50%; aspect-ratio: 2;">
+                    <div>2x1</div>
+                </div>
+            </div>
+              
+        </div>
+        <div class="border rounded container d-flex flex-column p-2 my-2" style="background-color: rgb(148, 148, 227);">
+            <p>footer</p>
+            <div class="border rounded container d-flex flex-row p-2 justify-content-around" style="background-color: rgb(150, 214, 150);">
+                <p>icon 1</p>
+                <p>icon 2</p>
+                <p>icon 3</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const log = document.getElementById("log");
+
+// Lock button: Lock the screen to the other orientation (rotated by 90 degrees)
+const rotate_btn = document.querySelector("#lock_button");
+rotate_btn.addEventListener("click", () => {
+  log.textContent += `Lock pressed \n`;
+
+  const oppositeOrientation = screen.orientation.type.startsWith("portrait")
+    ? "landscape"
+    : "portrait";
+  screen.orientation
+    .lock(oppositeOrientation)
+    .then(() => {
+      log.textContent = `Locked to ${oppositeOrientation}\n`;
+    })
+    .catch((error) => {
+      log.textContent += `${error}\n`;
+    });
+});
+
+// Unlock button: Unlock the screen orientation (if locked)
+const unlock_btn = document.querySelector("#unlock_button");
+unlock_btn.addEventListener("click", () => {
+  log.textContent += "Unlock pressed \n";
+  screen.orientation.unlock();
+});
+
+// Full screen button: Set the example to fullscreen.
+const fullscreen_btn = document.querySelector("#fullscreen_button");
+fullscreen_btn.addEventListener("click", () => {
+  log.textContent += "Fullscreen pressed \n";
+  const container = document.querySelector("#example_container");
+  container.requestFullscreen().catch((error) => {
+    log.textContent += `${error}\n`;
+  });
+});
+
+    </script>
+</body>
+</html>
